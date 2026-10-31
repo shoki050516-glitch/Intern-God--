@@ -1,0 +1,103 @@
+{
+  "entries": {
+    "reference_terrain": {
+      "declaration": {
+        "key": "reference_terrain",
+        "kind": "terrain",
+        "description": "Faithfully reconstruct the natural terrain from the original references. Deliver an editable geometry file; the Game Builder handles the game and integration.",
+        "referencePlan": true
+      },
+      "revision": "330ca091f59a87a6",
+      "path": "src/scene/reference_terrain.js",
+      "status": "ready",
+      "operationId": "run_INYGXE7Cm1pp",
+      "timing": {
+        "startedAt": "2026-10-30T16:58:30.182Z",
+        "codeStartedAt": "2026-10-30T16:58:30.292Z",
+        "referenceStartedAt": "2026-10-30T16:58:44.232Z",
+        "referenceFinishedAt": "2026-10-30T16:59:17.003Z",
+        "finishedAt": "2026-10-30T17:05:24.964Z"
+      },
+      "attempts": 27,
+      "planningImagePath": "evidence/terrain-references/reference_terrain/330ca091f59a87a6/99075f46265375a4d90cae5091eecf2cd406f8a1d223a17d79d983bd6ce9829f/plan-be55dffdaa5807af18ecf2882f05dba14318e3caa123803468ab9f8cc530f0ce.png",
+      "sourcePath": "src/scene/reference_terrain.330ca091f59a87a6.dd48ffb0.artisan.js",
+      "handover": "separate"
+    },
+    "render_style": {
+      "declaration": {
+        "key": "render_style",
+        "kind": "shader",
+        "description": "Reference 1 is the primary reconstruction target: a richly textured miniature landmass in warm backlit cloud space, with moss greens, gray-brown stone, mist-blue distance and warm-gold illumination. Preserve its broad nearly empty green plateau, substantial fractured cliff walls, soft bright sky and readable small rock accents. Use continuous soft material/light response, not flat low-poly blocks or cel bands. Base rendering tuning is required to retain painted midtone color and fine directional brushwork under gentle volumetric-looking light, soften harsh physically realistic contrast, and keep gold highlights restrained rather than glossy or plastic. Terrain, structures, inhabitants and vegetation share this treatment at both overview and eye level. Shadowed crevices remain cool and legible; contact shadows ground details without black outlining. Inspect the reference's stone facets, layered weathering and scattered moss intrusions rather than reducing them to generic noise. Reference 2, supplied as concept/scene-1.png, governs the later lakeshore close-up: clear timber grain, individual leaves and flowers, softly reflective freshwater and atmospheric but visible mountains. Reference 3 supplies missing UI styling only, never terrain, scene layout or character design."
+      },
+      "shaderPurpose": "rendering",
+      "revision": "507329015d5d5a12",
+      "status": "ready",
+      "path": "src/scene/render_style.js",
+      "operationId": "run_INYGXE7Cm1pp",
+      "timing": {
+        "startedAt": "2026-10-30T17:00:35.704Z",
+        "codeStartedAt": "2026-10-30T17:00:36.199Z",
+        "finishedAt": "2026-10-30T17:03:48.927Z"
+      },
+      "attempts": 14,
+      "sourcePath": "src/scene/render_style.507329015d5d5a12.0d67eaf3.artisan.js",
+      "failures": [
+        {
+          "attempt": 3,
+          "phase": "validation",
+          "reason": "Model call 4, draft revision 3: Scene validation: missing update"
+        }
+      ],
+      "handover": "separate"
+    },
+    "freshwater": {
+      "declaration": {
+        "key": "freshwater",
+        "kind": "shader",
+        "description": "Create configurable reusable painterly freshwater lake, directional streams and vertical waterfall sheet materials for mutable grid simulation. Mist blue reflected sky, restrained ripples, translucent near-shore/depth attenuation, view-dependent distortion/refraction appearance, double-sided underwater underside; water must remain readable at god view and fish eye. Separate flowing fall curtains with broken strands, white lip foam and fading descending mist, no ocean. Return material factory accepting waterDepth/flowDirection/time/tint/opacity and renderBounds/depth sampling context; author supplies water meshes, dynamic depths and geometry. Must support per-vertex water depth/flow if possible and update(dt). No new scene lights.",
+        "textureSlots": []
+      },
+      "shaderPurpose": "surface",
+      "revision": "13917fa253b11b9c",
+      "status": "ready",
+      "path": "src/scene/freshwater.js",
+      "operationId": "run_INYGXE7Cm1pp",
+      "timing": {
+        "startedAt": "2026-10-30T17:03:48.960Z",
+        "codeStartedAt": "2026-10-30T17:03:49.296Z",
+        "finishedAt": "2026-10-30T17:06:59.875Z"
+      },
+      "attempts": 13,
+      "sourcePath": "src/scene/freshwater.13917fa253b11b9c.714cc09c.artisan.js",
+      "failures": [
+        {
+          "attempt": 3,
+          "phase": "validation",
+          "reason": "Model call 4, draft revision 3: GLSL compilation failed: ERROR: 0:594: 'filter' : Illegal use of reserved word ERROR: 0:594: 'filter' : syntax error"
+        }
+      ],
+      "handover": "separate"
+    },
+    "living_lava": {
+      "declaration": {
+        "key": "living_lava",
+        "kind": "shader",
+        "description": "New local lava material for grid-fitted shallow lava cells in existing floating island. Orange-red molten fluid with dark curved crust islands, slow downhill-looking internal motion, soft gold fissures and subtle emission, readable at overhead distance and closeup. No scene lights. Expose time/update, color and heat if useful. Author supplies grid surface geometry and actual fluid state; preserve ordinary fog and output conversion.",
+        "textureSlots": []
+      },
+      "shaderPurpose": "surface",
+      "revision": "e8b982d51b7d7dae",
+      "status": "ready",
+      "path": "src/scene/living_lava.js",
+      "operationId": "run_itKxjYBWrVzF",
+      "timing": {
+        "startedAt": "2026-10-31T03:33:23.373Z",
+        "codeStartedAt": "2026-10-31T03:33:25.509Z",
+        "finishedAt": "2026-10-31T03:35:09.772Z"
+      },
+      "attempts": 8,
+      "sourcePath": "src/scene/living_lava.e8b982d51b7d7dae.a20a944c.artisan.js",
+      "handover": "separate"
+    }
+  }
+}

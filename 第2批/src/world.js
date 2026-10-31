@@ -1,0 +1,4 @@
+import * as THREE from 'three';
+import {bindRenderSettings} from './game-loop.js';
+import {createAtmosphere} from './atmosphere.js';
+export function createWorld(canvas){const renderer=new THREE.WebGLRenderer({canvas,antialias:true});bindRenderSettings(renderer);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1;const scene=new THREE.Scene();scene.background=new THREE.Color('#dce3e5');const atmosphere=createAtmosphere(scene);const camera=new THREE.PerspectiveCamera(43,16/9,.05,1800);const world={renderer,scene,camera,atmosphere,width:innerWidth,height:innerHeight,onResize:()=>{}};function resize(){world.width=innerWidth;world.height=innerHeight;renderer.setSize(innerWidth,innerHeight,false);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();world.onResize();}addEventListener('resize',resize);resize();return world;}

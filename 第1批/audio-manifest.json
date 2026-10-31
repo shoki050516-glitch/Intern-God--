@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "slots": {
+    "valley_music": {
+      "type": "bgm",
+      "description": "Main floating-valley sandbox segment, looping gentle instrumental piano and soft airy strings, calm playful creation atmosphere.",
+      "kind": "loop",
+      "category": "music",
+      "spatial": false,
+      "generated": {
+        "status": "ready",
+        "resource": "assets/audio/valley_music/b7de3044c81557ee022a43f71bc9eb82e80f3339d3cc6eb54fe1dd31afda3b2d.mp3",
+        "sha256": "b7de3044c81557ee022a43f71bc9eb82e80f3339d3cc6eb54fe1dd31afda3b2d"
+      },
+      "processing": {
+        "policyVersion": "active-rms-trim-v1",
+        "targetActiveRmsDbfs": -24,
+        "activeRmsDbfs": -21.631825623806552,
+        "samplePeakDbfs": -3.9935978411768884,
+        "trimStartSeconds": 0,
+        "gainDb": -2.3681743761934477
+      }
+    },
+    "wind_water": {
+      "type": "sfx",
+      "description": "Continuous gentle wind, quiet flowing freshwater and occasional distant birds for floating island ambience.",
+      "kind": "loop",
+      "category": "ambience",
+      "spatial": false,
+      "generated": {
+        "status": "ready",
+        "resource": "assets/audio/wind_water/1b3c02629490e04cfd2c1ecf06d54613da1108026f130ae225662d09f83b56a1.mp3",
+        "sha256": "1b3c02629490e04cfd2c1ecf06d54613da1108026f130ae225662d09f83b56a1"
+      },
+      "processing": {
+        "policyVersion": "active-rms-trim-v1",
+        "targetActiveRmsDbfs": -28,
+        "activeRmsDbfs": -29.543112958211157,
+        "samplePeakDbfs": -16.94589043392696,
+        "trimStartSeconds": 0,
+        "gainDb": 1.5431129582111573
+      }
+    },
+    "rain": {
+      "type": "sfx",
+      "description": "Rain under active rain clouds.",
+      "kind": "loop",
+      "category": "ambience",
+      "spatial": false,
+      "generated": {
+        "status": "ready",
+        "resource": "assets/audio/rain/aa6c2d76c4f06939a341cfa29520fc08e1b8ce6e245e31d800b9f3c89387a1fa.mp3",
+        "sha256": "aa6c2d76c4f06939a341cfa29520fc08e1b8ce6e245e31d800b9f3c89387a1fa"
+      },
+      "processing": {
+        "policyVersion": "active-rms-trim-v1",
+        "targetActiveRmsDbfs": -28,
+        "activeRmsDbfs": -21.54953689980921,
+        "samplePeakDbfs": -3.7970292135752457,
+        "trimStartSeconds": 0,
+        "gainDb": -6.450463100190792
+      }
+    },
+    "brush": {
+      "type": "sfx",
+      "description": "Continuous low earth rumble while sculpting terrain.",
+      "kind": "loop",
+      "category": "mechanical",
+      "spatial": false,
+      "generated": {
+        "status": "ready",
+        "resource": "assets/audio/brush/03629858dc26b518487dfb4f277ab08b15f3299d7a67ec28ead336bc23438a39.mp3",
+        "sha256": "03629858dc26b518487dfb4f277ab08b15f3299d7a67ec28ead336bc23438a39"
+      },
+      "processing": {
+        "policyVersion": "active-rms-trim-v1",
+        "targetActiveRmsDbfs": -30,
+        "activeRmsDbfs": -14.3251578025289,
+        "samplePeakDbfs": -2.7136523153238463,
+        "trimStartSeconds": 0,
+        "gainDb": -15.6748421974711
+      }
+    },
+    "arrival": {
+      "type": "sfx",
+      "description": "Soft magical arrival chime on creature creation.",
+      "kind": "oneshot",
+      "category": "musical_cue",
+      "spatial": false,
+      "generated": {
+        "status": "ready",
+        "resource": "assets/audio/arrival/3ba5193832692f5b35d186ac494b6f1db64130b50024197e7e7794bd3d33f4ed.mp3",
+        "sha256": "3ba5193832692f5b35d186ac494b6f1db64130b50024197e7e7794bd3d33f4ed"
+      },
+      "processing": {
+        "policyVersion": "active-rms-trim-v1",
+        "targetActiveRmsDbfs": -17,
+        "activeRmsDbfs": -30.820474878111554,
+        "samplePeakDbfs": -12.00035682709669,
+        "trimStartSeconds": 0.01,
+        "gainDb": 11.00035682709669
+      }
+    },
+    "event": {
+      "type": "sfx",
+      "description": "Small warm chime for birth, partnership or house completion.",
+      "kind": "oneshot",
+      "category": "reward",
+      "spatial": false,
+      "generated": {
+        "status": "ready",
+        "resource": "assets/audio/event/2a122550655f95db8cd5cf0f2fe97a86dfd70c99b07905e14e9530831e2251f1.mp3",
+        "sha256": "2a122550655f95db8cd5cf0f2fe97a86dfd70c99b07905e14e9530831e2251f1"
+      },
+      "processing": {
+        "policyVersion": "active-rms-trim-v1",
+        "targetActiveRmsDbfs": -17,
+        "activeRmsDbfs": -20.055529491977747,
+        "samplePeakDbfs": -3.5399544288590254,
+        "trimStartSeconds": 0.01,
+        "gainDb": 2.5399544288590254
+      }
+    },
+    "miracle": {
+      "type": "sfx",
+      "description": "Thunder clap and low rolling thunder triggered by lightning; gentle global gain for other miracles.",
+      "kind": "oneshot",
+      "category": "impact",
+      "spatial": false,
+      "durationSeconds": 3,
+      "generated": {
+        "status": "ready",
+        "resource": "assets/audio/miracle/9fb70a1cf08fbcbe089b9f444acf7b77d0bd59488ce5c656c868aca04e461883.mp3",
+        "sha256": "9fb70a1cf08fbcbe089b9f444acf7b77d0bd59488ce5c656c868aca04e461883"
+      },
+      "processing": {
+        "policyVersion": "active-rms-trim-v1",
+        "targetActiveRmsDbfs": -15,
+        "activeRmsDbfs": -25.289016691344184,
+        "samplePeakDbfs": -11.834556189421379,
+        "trimStartSeconds": 0.01,
+        "gainDb": 10.289016691344184
+      }
+    }
+  }
+}

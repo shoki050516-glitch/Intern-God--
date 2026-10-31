@@ -1,0 +1,312 @@
+<!DOCTYPE html><html lang="zh"><head>
+  <script data-hm-runtime="runtime/host-bridge.js">(function () {
+  try {
+    if (window.__HM_HOST_BRIDGE__) return;
+    window.__HM_HOST_BRIDGE__ = true;
+    var V = 1;
+    var POLL_MS = 100;
+    var firstDrawAt = 0;
+    var hooked = false;
+    var readySent = false;
+    var errorSent = false;
+
+    var protos = [];
+    if (typeof WebGLRenderingContext === "function") protos.push(WebGLRenderingContext.prototype);
+    if (typeof WebGL2RenderingContext === "function") protos.push(WebGL2RenderingContext.prototype);
+    var methods = ["drawArrays","drawElements","drawArraysInstanced","drawElementsInstanced","drawRangeElements"];
+    for (var i = 0; i < protos.length; i += 1) {
+      for (var j = 0; j < methods.length; j += 1) {
+        (function (proto, name) {
+          var original = proto[name];
+          if (typeof original !== "function") return;
+          proto[name] = function () {
+            if (!firstDrawAt) {
+              try {
+                if (this.getParameter(this.FRAMEBUFFER_BINDING) === null) firstDrawAt = performance.now();
+              } catch (error) {}
+            }
+            return original.apply(this, arguments);
+          };
+          hooked = true;
+        })(protos[i], methods[j]);
+      }
+    }
+
+    function post(msg) {
+      try {
+        var json = JSON.stringify(msg);
+        var handlers = window.webkit && window.webkit.messageHandlers;
+        var ios = handlers && handlers.HmGameBridge;
+        var android = window.HmGameBridge;
+        if (ios && typeof ios.postMessage === "function") {
+          ios.postMessage(json);
+        } else if (android && typeof android.postMessage === "function") {
+          android.postMessage(json);
+        } else if (window.parent && window.parent !== window) {
+          window.parent.postMessage(json, "*");
+        }
+      } catch (error) {}
+      try {
+        if (msg.type === "ready") window.__HM_HOST_READY__ = msg;
+        window.dispatchEvent(new CustomEvent("hm:host-message", { detail: msg }));
+      } catch (error) {}
+    }
+
+    function isReady() {
+      var canvas = document.querySelector("canvas");
+      if (!canvas) return false;
+      var rect = canvas.getBoundingClientRect();
+      if (!(rect.width > 0 && rect.height > 0)) return false;
+      if (hooked && !firstDrawAt) return false;
+      var assets = window.__HM_ASSET_READY__;
+      if (!assets) return true;
+      if (assets.initialized !== true && assets.failed !== true) return false;
+      if (assets.pending !== 0) return false;
+      return assets.idleMs >= (assets.started > 0 ? 400 : 1500);
+    }
+
+    function sendReady() {
+      if (readySent) return;
+      readySent = true;
+      clearInterval(timer);
+      post({ type: "ready", v: V, elapsedMs: Math.round(performance.now()) });
+    }
+
+    function sendError(message) {
+      if (readySent || errorSent) return;
+      errorSent = true;
+      post({ type: "error", v: V, message: String(message).slice(0, 500) });
+    }
+
+    window.addEventListener("error", function (event) {
+      sendError(event.message || (event.error && event.error.message) || "error");
+    });
+    window.addEventListener("unhandledrejection", function (event) {
+      var reason = event.reason;
+      sendError(reason && reason.message ? reason.message : reason);
+    });
+
+    var timer = setInterval(function () {
+      var ready = false;
+      try { ready = isReady(); } catch (error) {}
+      if (ready) sendReady();
+    }, POLL_MS);
+  } catch (error) {
+  }
+})();
+</script>
+  <script data-hm-runtime="runtime/render-settings.js">(function () {
+  if (window.HMRenderSettings) return;
+  var params = new URLSearchParams(window.location.search);
+  function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
+  function urlValue(name, min, max) {
+    var raw = params.get(name) ?? (name === "pixelRatio" ? params.get("ratio") : null);
+    var value = raw === null || raw.trim() === "" ? NaN : Number(raw);
+    return Number.isFinite(value) && value > 0 ? clamp(value, min, max) : null;
+  }
+  var initialFps = urlValue("fps", 1, 120) ?? 60;
+  var initialRatio = urlValue("pixelRatio", 0.25, 2);
+  var fpsOverride = null;
+  var ratioOverride = null;
+  function get() {
+    var dpr = window.devicePixelRatio;
+    var defaultRatio = Number.isFinite(dpr) && dpr > 0 ? clamp(dpr, 0.25, 2) : 1;
+    return { fps: fpsOverride ?? initialFps, pixelRatio: ratioOverride ?? initialRatio ?? defaultRatio };
+  }
+  function isSupported() {
+    var loop = window.__HM_GAME_LOOP__;
+    return !!(loop && loop.renderSettingsVersion === 1 && loop.renderSettingsBound === true);
+  }
+  function value(input, name, min, max) {
+    if (input === null) return null;
+    if (typeof input !== "number" || !Number.isFinite(input) || input <= 0) {
+      throw new TypeError(name + " must be a positive finite number or null");
+    }
+    return clamp(input, min, max);
+  }
+  function set(patch) {
+    if (!patch || typeof patch !== "object" || Array.isArray(patch) ||
+        Object.keys(patch).some(function (key) { return key !== "fps" && key !== "pixelRatio"; })) {
+      throw new TypeError("Expected a settings object containing fps and/or pixelRatio");
+    }
+    var fps = Object.hasOwn(patch, "fps") ? value(patch.fps, "fps", 1, 120) : fpsOverride;
+    var ratio = Object.hasOwn(patch, "pixelRatio") ? value(patch.pixelRatio, "pixelRatio", 0.25, 2) : ratioOverride;
+    fpsOverride = fps;
+    ratioOverride = ratio;
+    return get();
+  }
+  Object.defineProperty(window, "HMRenderSettings", {
+    value: Object.freeze({ v: 1, get: get, set: set, isSupported: isSupported }),
+    writable: false, configurable: false
+  });
+  window.addEventListener("message", function (event) {
+    if (window.parent === window || event.source !== window.parent) return;
+    var request = event.data;
+    if (!request || request.v !== 1 ||
+        (request.type !== "hm:render-settings:get" && request.type !== "hm:render-settings:set") ||
+        typeof request.requestId !== "string" || !request.requestId || request.requestId.length > 128) return;
+    var result = { v: 1, type: "hm:render-settings:result", requestId: request.requestId, ok: true };
+    try {
+      if (request.type === "hm:render-settings:set") set(request.settings);
+    } catch (error) {
+      result.ok = false;
+      result.error = "Invalid render settings";
+    }
+    result.settings = get();
+    result.supported = isSupported();
+    try {
+      event.source.postMessage(result, event.origin && event.origin !== "null" ? event.origin : "*");
+    } catch (error) { }
+  });
+})();
+</script>
+  <style data-hm-runtime="runtime/game-interaction.css">    :where(html, body, canvas) {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    :where(input, textarea, :read-write) {
+      -webkit-touch-callout: default !important;
+      -webkit-user-select: text !important;
+      user-select: text !important;
+    }
+    :where([contenteditable="false"]) {
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none !important;
+      user-select: none !important;
+    }</style>
+  <style data-hm-runtime="runtime/ui-layout.css">:root {
+  font-size: clamp(12px, 2.962963vmin, 32px);
+  --hm-ui-touch: max(44px, 4rem);
+  --hm-ui-space: 1.5rem; --hm-ui-gap: 0.75rem;
+  --hm-ui-font: 1rem; --hm-ui-title: 1.75rem; --hm-ui-caption: 0.75rem;
+}
+:where([data-hm-ui]) {
+  position: fixed; inset: 0; box-sizing: border-box; z-index: 10;
+  display: grid; grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto; gap: var(--hm-ui-gap);
+  padding: max(var(--hm-ui-space), env(safe-area-inset-top)) max(var(--hm-ui-space), env(safe-area-inset-right)) max(var(--hm-ui-space), env(safe-area-inset-bottom)) max(var(--hm-ui-space), env(safe-area-inset-left));
+  font-size: var(--hm-ui-font); line-height: 1.3; pointer-events: none;
+}
+:where([data-hm-ui] *, [data-hm-ui] *::before, [data-hm-ui] *::after) { box-sizing: border-box; }
+:where([data-hm-ui] .hm-ui-top, [data-hm-ui] .hm-ui-bottom) {
+  min-width: 0; display: flex; flex-wrap: wrap; align-items: center;
+  justify-content: space-between; gap: var(--hm-ui-gap);
+}
+:where([data-hm-ui] .hm-ui-top) { grid-row: 1; }
+:where([data-hm-ui] .hm-ui-bottom) { grid-row: 3; }
+:where([data-hm-ui] .hm-ui-actions) {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: var(--hm-ui-gap); min-width: 0; max-width: 100%;
+}
+:where([data-hm-ui] .hm-ui-center) {
+  grid-row: 2; align-self: stretch; justify-self: stretch;
+  display: grid; place-items: center; min-width: 0;
+  max-width: 100%; max-height: 100%; min-height: 0; overflow: auto; pointer-events: auto;
+}
+:where([data-hm-ui] button, [data-hm-ui] [role="button"]) {
+  min-width: var(--hm-ui-touch); min-height: var(--hm-ui-touch);
+  flex-shrink: 0; font: inherit; line-height: inherit;
+  touch-action: manipulation; pointer-events: auto;
+}
+:where([data-hm-ui] h1, [data-hm-ui] h2) { font-size: var(--hm-ui-title); margin: 0; }
+[data-hm-art-content="safe"] { box-sizing:border-box; min-width:0; max-width:100%; overflow-wrap:anywhere; }
+button[data-hm-art-content="safe"] { white-space:normal; }
+[data-hm-art]::before { content:""; position:absolute; inset:0; z-index:-1; box-sizing:border-box; pointer-events:none; background-repeat:no-repeat; border-style:none!important; border-width:0!important; border-color:transparent!important; border-radius:0!important; outline:none!important; box-shadow:none!important; background-color:transparent!important; }
+button[data-hm-art="button"]::before { background-image:var(--hm-art-normal-image); background-size:var(--hm-art-normal-size); background-position:var(--hm-art-normal-position); }
+button[data-hm-art="button"]:hover:not(:disabled)::before { background-image:var(--hm-art-hover-image); background-size:var(--hm-art-hover-size); background-position:var(--hm-art-hover-position); }
+button[data-hm-art="button"]:active:not(:disabled)::before { background-image:var(--hm-art-pressed-image); background-size:var(--hm-art-pressed-size); background-position:var(--hm-art-pressed-position); }
+button[data-hm-art="button"]:disabled::before { background-image:var(--hm-art-disabled-image); background-size:var(--hm-art-disabled-size); background-position:var(--hm-art-disabled-position); }
+[data-hm-art="panel"]::before { background-image:var(--hm-art-panel-image); background-size:var(--hm-art-panel-size); background-position:var(--hm-art-panel-position); }
+[data-hm-art="panel"][data-hm-art-sliced="true"]::before { background-image:none; border-style:solid!important; border-width:var(--hm-art-panel-width)!important; border-image-source:var(--hm-art-panel-image); border-image-slice:var(--hm-art-panel-slice); border-image-repeat:stretch; }
+</style>
+  <script data-hm-runtime="runtime/game-interaction.js">(() => {
+  const installed = Symbol.for("hm.gameInteraction");
+  if (document[installed]) return;
+  document[installed] = true;
+
+  function elementOf(event) {
+    const target = event.composedPath()[0] || event.target;
+    return target instanceof Element ? target : target?.parentElement;
+  }
+
+  function allowsEditing(element) {
+    return element && (element.closest("input, textarea, select") || element.isContentEditable);
+  }
+
+  document.addEventListener("contextmenu", (event) => {
+    if (!allowsEditing(elementOf(event))) event.preventDefault();
+  }, { capture: true });
+
+  document.addEventListener("dragstart", (event) => {
+    const element = elementOf(event);
+    if (allowsEditing(element) || element?.closest('[data-hm-native-drag="true"]')) return;
+    event.preventDefault();
+  }, { capture: true });
+})();</script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>实习上帝</title>
+  <style>    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; color: #f5f7fb; font-family: system-ui, sans-serif; }
+    #game { width: 100vw; height: 100vh; display: block; touch-action: none; }
+    [data-hm-loading] { position: fixed; inset-inline: 10%; bottom: max(2rem, env(safe-area-inset-bottom)); }
+    [data-hm-loading] progress { width: 100%; }
+  </style>
+  <link rel="stylesheet" href="./src/ui.css">
+<link rel="stylesheet" href="./src/divine-ui.css">
+<link rel="stylesheet" href="./src/office-ui.css">
+<link rel="stylesheet" href="./src/start-menu.css">
+  <script type="importmap">{"imports":{"three":"./vendor/three/three.module.js","three/addons/":"./vendor/three/addons/"}}</script>
+  <link rel="modulepreload" href="./vendor/three/three.module.js" data-hm-preload="">
+  <link rel="modulepreload" href="./runtime/asset-runtime.js" data-hm-preload="">
+  <link rel="modulepreload" href="./runtime/internal/asset-core.js" data-hm-preload="">
+  <link rel="modulepreload" href="./runtime/internal/asset-diagnostics.js" data-hm-preload="">
+  <link rel="modulepreload" href="./vendor/three/addons/loaders/GLTFLoader.js" data-hm-preload="">
+  <link rel="modulepreload" href="./vendor/three/addons/libs/meshopt_decoder.module.js" data-hm-preload="">
+  <link rel="modulepreload" href="./vendor/three/addons/utils/SkeletonUtils.js" data-hm-preload="">
+  <link rel="modulepreload" href="./vendor/three/addons/utils/BufferGeometryUtils.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/world.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/lights.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/game-loop.js" data-hm-preload="">
+  <link rel="modulepreload" href="./runtime/game-loading.js" data-hm-preload="">
+  <link rel="modulepreload" href="./runtime/audio-runtime.js" data-hm-preload="">
+  <link rel="modulepreload" href="./runtime/i18n.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/simulation.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/divinity.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/office-simulation.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/office-view.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/office-ui.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/divine-view.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/ui.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/landscape.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/life-view.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/camera-controls.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/effects.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/start-menu.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/atmosphere.js" data-hm-preload="">
+  <link rel="modulepreload" href="./runtime/factory-usage.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/body-space.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/hydrology.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/scene/living_lava.e8b982d51b7d7dae.a20a944c.artisan.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/office-icons.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/sticker-icons.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/scene/reference_terrain.330ca091f59a87a6.dd48ffb0.artisan.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/scene/freshwater.13917fa253b11b9c.714cc09c.artisan.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/visual.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/office-terrain.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/foliage-fallback.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/scene/render_style.507329015d5d5a12.0d67eaf3.artisan.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/shaders/lit.vert.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/shaders/lit-skinned.vert.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/shaders/lit.frag.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/shaders/blend-surface.frag.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/shaders/sky.vert.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/shaders/sky.frag.js" data-hm-preload="">
+  <link rel="modulepreload" href="./src/shaders/shading-settings.js" data-hm-preload="">
+</head>
+<body>
+  <canvas id="game" tabindex="0"></canvas>
+  <section id="start-menu"><div class="sm-art" aria-hidden="true"></div></section>
+  <script type="module" src="./src/main.js"></script>
+
+</body></html>
